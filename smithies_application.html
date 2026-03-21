@@ -44,7 +44,7 @@ body { background: #080808; color: #f0ece4; font-family: Arial, sans-serif; min-
     <p class="subtitle">Transportation, Crane and Logistics. Fill out the form below and a member of our team will be in touch.</p>
   </div>
 
-  <form name="smithies-application" method="POST" data-netlify="true" netlify-honeypot="bot-field" enctype="multipart/form-data" >
+  <form name="smithies-application" method="POST" action="/success.html" data-netlify="true" netlify-honeypot="bot-field" enctype="multipart/form-data">
     <input type="hidden" name="form-name" value="smithies-application">
     <input type="hidden" name="bot-field" style="display:none;">
 
@@ -139,17 +139,5 @@ body { background: #080808; color: #f0ece4; font-family: Arial, sans-serif; min-
   <div class="brand">Listing powered by <span>The Dirty Hands Report</span></div>
 
 </div>
-
-<div id="success-msg" style="display:none; background:#141414; border-left:4px solid #f05a1a; padding:48px; text-align:center; margin-top:24px;">
-  <div style="font-size:48px; margin-bottom:24px;">✅</div>
-  <h2 style="font-size:28px; font-weight:900; text-transform:uppercase; margin-bottom:16px;">Application <span style="color:#f05a1a;">Received</span></h2>
-  <p style="font-size:15px; color:#777; line-height:1.8;">Thanks for applying to Smithies Hotshot Service LLC. A member of our team will review your application and be in touch soon.</p>
-</div>
-<script>
-if(window.location.search.indexOf('success=true') > -1) {
-  document.getElementById('success-msg').style.display = 'block';
-  document.getElementById('appform').style.display = 'none';
-}
-</script>
 </body>
 </html>
