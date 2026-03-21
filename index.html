@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<!-- email-obfuscation: off -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Dirty Hands Report</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #080808; color: #f0ece4; font-family: Arial, sans-serif; }
+a { color: inherit; text-decoration: none; }
+.hero { padding: 80px 32px 60px; position: relative; overflow: hidden; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+.hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to right, rgba(8,8,8,0.55) 0%, rgba(8,8,8,0.25) 50%, rgba(8,8,8,0.08) 100%), url('1104.jpg') center/cover no-repeat; pointer-events: none; }
+.hero-tag { font-size: 11px; font-weight: 700; letter-spacing: 5px; color: #f05a1a; text-transform: uppercase; margin-bottom: 20px; position: relative; z-index: 1; }
+.hero-title { font-size: clamp(72px, 13vw, 180px); font-weight: 900; line-height: 0.9; text-transform: uppercase; letter-spacing: 2px; position: relative; z-index: 1; }
+.hero-title .orange { color: #f05a1a; }
+.hero-title .outline { -webkit-text-stroke: 2px rgba(240,236,228,0.3); color: transparent; }
+.hero-sub { max-width: 520px; font-size: 16px; line-height: 1.8; color: #ccc; margin-top: 28px; position: relative; z-index: 1; }
+.hero-sub strong { color: #f0ece4; }
+.hero-btns { display: flex; gap: 14px; margin-top: 36px; flex-wrap: wrap; position: relative; z-index: 1; }
+.btn-o { display: inline-block; background: #f05a1a; color: #000; font-size: 13px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; padding: 14px 28px; }
+.btn-ghost { display: inline-block; border: 1px solid rgba(240,236,228,0.25); color: #f0ece4; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 13px 24px; }
+.section { padding: 100px 48px; }
+.section-alt { background: #0d0d0d; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 4px; color: #f05a1a; text-transform: uppercase; margin-bottom: 16px; }
+.sec-title { font-size: clamp(40px, 7vw, 90px); font-weight: 900; text-transform: uppercase; line-height: 0.92; margin-bottom: 40px; }
+.sec-title span { color: #f05a1a; }
+.body-text { font-size: 16px; color: #999; line-height: 1.9; max-width: 640px; margin-bottom: 24px; }
+.body-text strong { color: #f0ece4; }
+.pull-quote { border-left: 3px solid #f05a1a; padding: 16px 24px; font-size: 15px; color: #ccc; line-height: 1.8; margin: 32px 0; font-style: italic; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; margin-top: 48px; }
+.stat { background: #0d0d0d; padding: 36px 28px; }
+.stat-num { font-size: clamp(42px, 6vw, 72px); font-weight: 900; color: #f05a1a; line-height: 1; }
+.stat-num span { font-size: 0.6em; }
+.stat-lbl { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #555; margin-top: 8px; }
+.stat-sub { font-size: 13px; color: #444; margin-top: 8px; line-height: 1.6; }
+.proof-bar { background: #0d0d0d; border-left: 4px solid #f05a1a; padding: 24px 32px; margin: 32px 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+.proof-num { font-size: 32px; font-weight: 900; color: #f05a1a; }
+.proof-lbl { font-size: 11px; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+.pkg-table { margin-top: 32px; border: 1px solid #1a1a1a; }
+.pkg-row { display: flex; justify-content: space-between; align-items: center; padding: 20px 28px; border-bottom: 1px solid #111; flex-wrap: wrap; gap: 8px; }
+.pkg-row:last-child { border-bottom: none; }
+.pkg-name { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #aaa; }
+.pkg-desc { font-size: 12px; color: #555; margin-top: 4px; }
+.pkg-link a { color: #f05a1a; font-size: 13px; font-weight: 700; }
+.ep { font-size: 11px; color: #555; margin-top: 4px; }
+.pkg-note { margin-top: 16px; padding: 16px 20px; background: #0d0d0d; border-left: 3px solid #f05a1a; font-size: 13px; color: #777; }
+.job-grid { display: flex; flex-direction: column; gap: 16px; margin-top: 32px; }
+.job-card { background: #111; border-left: 4px solid #f05a1a; padding: 24px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+.job-company { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #f05a1a; margin-bottom: 6px; }
+.job-title { font-size: 18px; font-weight: 900; text-transform: uppercase; color: #f0ece4; }
+.job-details { font-size: 13px; color: #777; margin-top: 6px; }
+.job-btn { background: #f05a1a; color: #000; font-size: 12px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; padding: 12px 20px; white-space: nowrap; display: inline-block; }
+.job-powered { margin-top: 24px; padding: 14px 18px; background: #0d0d0d; border-left: 3px solid #1a1a1a; font-size: 13px; color: #555; }
+.job-powered span { color: #f05a1a; }
+.four-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; margin-top: 32px; }
+.ad-card { background: #0d0d0d; padding: 32px; }
+.ad-tag { font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #f05a1a; margin-bottom: 10px; }
+.ad-title { font-size: 18px; font-weight: 900; text-transform: uppercase; margin-bottom: 12px; }
+.ad-body { font-size: 13px; color: #777; line-height: 1.8; margin-bottom: 16px; }
+.ad-link { color: #f05a1a; font-size: 12px; font-weight: 700; }
+.aud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-top: 32px; }
+.map-lbl { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #555; margin-bottom: 20px; }
+.hub-list { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+.hub { display: flex; gap: 14px; align-items: flex-start; }
+.dot { width: 8px; height: 8px; background: #f05a1a; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.dot.dim { background: #333; }
+.hub-name { font-size: 14px; font-weight: 700; color: #f0ece4; }
+.hub-desc { font-size: 12px; color: #555; margin-top: 3px; }
+.aud-stats { display: flex; flex-direction: column; gap: 24px; }
+.aud-stat-num { font-size: 28px; font-weight: 900; color: #f05a1a; }
+.aud-stat-lbl { font-size: 13px; color: #777; line-height: 1.7; margin-top: 4px; }
+.why-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; }
+.why-card { background: #0d0d0d; padding: 36px; }
+.why-num { font-size: 11px; font-weight: 700; letter-spacing: 3px; color: #333; margin-bottom: 12px; }
+.why-title { font-size: 18px; font-weight: 900; text-transform: uppercase; margin-bottom: 12px; }
+.why-body { font-size: 14px; color: #777; line-height: 1.8; }
+.cta { padding: 120px 48px; text-align: center; background: #080808; }
+.cta-title { font-size: clamp(52px, 9vw, 110px); font-weight: 900; text-transform: uppercase; line-height: 0.92; margin-bottom: 22px; }
+.cta-title span { color: #f05a1a; }
+.cta-sub { font-size: 16px; color: #777; max-width: 480px; margin: 0 auto 44px; line-height: 1.8; }
+.cta-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.cta-note { margin-top: 22px; font-size: 13px; color: #555; letter-spacing: 1px; }
+footer { border-top: 1px solid #1a1a1a; padding: 52px 48px 0; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 44px; background: #080808; }
+.foot-copy { font-size: 11px; color: #333; padding: 24px 48px; border-top: 1px solid #111; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 768px) {
+  .section { padding: 60px 20px; }
+  .hero { padding: 60px 20px 40px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .four-grid, .why-grid, .aud-grid { grid-template-columns: 1fr; }
+  footer { grid-template-columns: 1fr; padding: 40px 20px 0; }
+  .foot-copy { padding: 20px; }
+  .job-card { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-tag">&#x1F525; Bakken &middot; Permian &middot; Beyond &mdash; Est. January 2026</div>
+  <h1 class="hero-title">
+    <div>The</div>
+    <div class="orange">Dirty Hands</div>
+    <div class="outline">Report</div>
+  </h1>
+  <p class="hero-sub">Real oilfield content from someone <strong>actually in the field.</strong> <strong>10.8 million views</strong> since January. The oilfield workforce you're trying to reach &mdash; already here.</p>
+  <div class="hero-btns">
+    <a class="btn-o" href="#listings">Get Your Jobs Listed</a>
+    <a class="btn-ghost" href="#stats">See the Numbers</a>
+  </div>
+</section>
+
+<section class="section" id="stats">
+  <div class="eyebrow">By The Numbers</div>
+  <h2 class="sec-title">The Reach<br>Is <span>Real.</span></h2>
+  <div class="stats-grid">
+    <div class="stat"><div class="stat-num">10.8<span>M</span></div><div class="stat-lbl">Total Views</div><div class="stat-sub">Since January 2026.</div></div>
+    <div class="stat"><div class="stat-num">9.3<span>K</span></div><div class="stat-lbl">Followers</div><div class="stat-sub">Real oilfield workers. Growing fast.</div></div>
+    <div class="stat"><div class="stat-num">570</div><div class="stat-lbl">Link Clicks</div><div class="stat-sub">From a single post with 8 job listings.</div></div>
+    <div class="stat"><div class="stat-num">1<span>M</span>+</div><div class="stat-lbl">Views Per Week</div><div class="stat-sub">Consistent weekly reach.</div></div>
+  </div>
+  <div class="proof-bar">
+    <div><div class="proof-num">101,743</div><div class="proof-lbl">Views &mdash; Mar 17 Post</div></div>
+    <div><div class="proof-num">570</div><div class="proof-lbl">Link Clicks &mdash; 48hrs</div></div>
+    <div><div class="proof-num">81</div><div class="proof-lbl">Shares</div></div>
+    <div><div class="proof-num">370</div><div class="proof-lbl">Interactions</div></div>
+  </div>
+</section>
+
+<section class="section section-alt" id="about">
+  <div class="eyebrow">Who We Are</div>
+  <h2 class="sec-title">Built From<br><span>Inside</span> The Field.</h2>
+  <p class="body-text">The Dirty Hands Report isn't run by a marketing agency or some guy behind a desk. It's built by someone <strong>actually in the oilfield</strong> &mdash; which is exactly why the audience trusts it.</p>
+  <p class="body-text">Launched in January 2026. Grew from 6 followers to 9,300+ in under 90 days. No ad spend. No gimmicks. Just content that resonates with the people who actually do the work.</p>
+  <div class="pull-quote">"570 people clicked directly to job listings from a single post with only 8 positions. That's not an algorithm trick &mdash; that's an engaged audience that trusts the source."</div>
+</section>
+
+<section class="section" id="listings">
+  <div class="eyebrow">Now Hiring &mdash; Bakken Basin</div>
+  <h2 class="sec-title">Current<br><span>Job Listings.</span></h2>
+  <p class="body-text">Open positions from operators and service companies across the Bakken. New listings added weekly.</p>
+  <div class="job-grid">
+    <div class="job-card">
+      <div>
+        <div class="job-company">Smithies Hotshot Service LLC</div>
+        <div class="job-title">Multiple Positions &mdash; Dickinson, ND</div>
+        <div class="job-details">Hotshot Driver &middot; Crane Operator &middot; Slick Truck &middot; Winch Truck &middot; Bed/Pole Truck</div>
+      </div>
+      <a class="job-btn" href="smithies_application.html">Apply Now</a>
+    </div>
+    <div class="job-card" style="border-left-color:#1a1a1a; opacity:0.5;">
+      <div>
+        <div class="job-company" style="color:#444;">Your Company Here</div>
+        <div class="job-title" style="color:#333;">Your Job Title</div>
+        <div class="job-details">Reach thousands of qualified oilfield workers</div>
+      </div>
+      <a class="job-btn" style="background:#1a1a1a; color:#555;" href="#advertise">List a Job</a>
+    </div>
+  </div>
+  <div class="job-powered">Powered by <span>The Dirty Hands Report</span> &nbsp;&middot;&nbsp; Want your listing here? Email <strong style="color:#f0ece4;">admin&#64;dirtyhandsoil.com</strong></div>
+</section>
+
+<section class="section section-alt" id="advertise">
+  <div class="eyebrow">Advertise With Us</div>
+  <h2 class="sec-title">Listing<br><span>Packages.</span></h2>
+  <div class="pkg-table">
+    <div class="pkg-row">
+      <div><div class="pkg-name">Weekly Job Listing</div><div class="pkg-desc">One featured post per week. Up to 5 positions. Includes tracked link.</div></div>
+      <div class="pkg-link"><a href="mailto:admin&#64;dirtyhandsoil.com?subject=Weekly%20Job%20Listing">Get Pricing</a><div class="ep">admin&#64;dirtyhandsoil.com</div></div>
+    </div>
+    <div class="pkg-row">
+      <div><div class="pkg-name">Monthly Job Listing</div><div class="pkg-desc">4 weekly posts per month. Best value for ongoing hiring needs.</div></div>
+      <div class="pkg-link"><a href="mailto:admin&#64;dirtyhandsoil.com?subject=Monthly%20Job%20Listing">Get Pricing</a><div class="ep">admin&#64;dirtyhandsoil.com</div></div>
+    </div>
+    <div class="pkg-row">
+      <div><div class="pkg-name">Dedicated Sponsored Post</div><div class="pkg-desc">Your company gets its own post &mdash; not shared. Maximum visibility.</div></div>
+      <div class="pkg-link"><a href="mailto:admin&#64;dirtyhandsoil.com?subject=Dedicated%20Sponsored%20Post">Get Pricing</a><div class="ep">admin&#64;dirtyhandsoil.com</div></div>
+    </div>
+    <div class="pkg-row">
+      <div><div class="pkg-name">Monthly Partner Package</div><div class="pkg-desc">4 weekly listings plus 1 dedicated post. Best for continuous hiring.</div></div>
+      <div class="pkg-link"><a href="mailto:admin&#64;dirtyhandsoil.com?subject=Monthly%20Partner%20Package">Get Pricing</a><div class="ep">admin&#64;dirtyhandsoil.com</div></div>
+    </div>
+    <div class="pkg-row"><div class="pkg-name">Spots Per Weekly Post</div><div class="pkg-name" style="color:#f05a1a;">5 Max</div></div>
+  </div>
+  <div class="pkg-note">Rates increase at 10,000 followers. Currently at 9,327 and climbing fast.</div>
+  <div style="margin-top:24px;">
+    <a href="mailto:admin&#64;dirtyhandsoil.com?subject=Rates%20and%20Availability" class="btn-o" style="display:inline-block;">Get Rates &amp; Availability</a>
+    <div class="ep" style="margin-top:8px;">admin&#64;dirtyhandsoil.com</div>
+  </div>
+</section>
+
+<section class="section" id="brands">
+  <div class="eyebrow">Brand Advertising</div>
+  <h2 class="sec-title">More Than<br>Just <span>Job Posts.</span></h2>
+  <div class="four-grid">
+    <div class="ad-card">
+      <div class="ad-tag">Product Spotlight</div>
+      <div class="ad-title">Gear &amp; Equipment</div>
+      <div class="ad-body">Boots, gloves, PPE, tools &mdash; oilfield workers buy what other oilfield workers recommend.</div>
+      <a href="mailto:admin&#64;dirtyhandsoil.com?subject=Product%20Spotlight%20Ad" class="ad-link">Get Pricing</a>
+      <div class="ep">admin&#64;dirtyhandsoil.com</div>
+    </div>
+    <div class="ad-card">
+      <div class="ad-tag">Service Company</div>
+      <div class="ad-title">Oilfield Services</div>
+      <div class="ad-body">Hotshot, rental tools, inspection, chemical treating &mdash; if you service the oilfield, this audience needs to know you exist.</div>
+      <a href="mailto:admin&#64;dirtyhandsoil.com?subject=Service%20Company%20Ad" class="ad-link">Get Pricing</a>
+      <div class="ep">admin&#64;dirtyhandsoil.com</div>
+    </div>
+    <div class="ad-card">
+      <div class="ad-tag">Training &amp; Certs</div>
+      <div class="ad-title">Safety &amp; Certifications</div>
+      <div class="ad-body">Safety courses, NCCCO certifications, CDL programs, H2S training &mdash; oilfield workers are always looking to add tickets.</div>
+      <a href="mailto:admin&#64;dirtyhandsoil.com?subject=Training%20Ad" class="ad-link">Get Pricing</a>
+      <div class="ep">admin&#64;dirtyhandsoil.com</div>
+    </div>
+    <div class="ad-card">
+      <div class="ad-tag">Giveaway / Promo</div>
+      <div class="ad-title">Sponsored Giveaways</div>
+      <div class="ad-body">High engagement, massive reach. Giveaways on DHR consistently drive thousands of interactions.</div>
+      <a href="mailto:admin&#64;dirtyhandsoil.com?subject=Sponsored%20Giveaway" class="ad-link">Get Pricing</a>
+      <div class="ep">admin&#64;dirtyhandsoil.com</div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt" id="audience">
+  <div class="eyebrow">Who You Are Reaching</div>
+  <h2 class="sec-title">Your Workforce.<br><span>Already Here.</span></h2>
+  <div class="aud-grid">
+    <div>
+      <div class="map-lbl">Primary Markets</div>
+      <ul class="hub-list">
+        <li class="hub"><div class="dot"></div><div><div class="hub-name">Bakken &mdash; Williston &amp; Dickinson, ND</div><div class="hub-desc">Primary market. Active Bakken oilfield workforce.</div></div></li>
+        <li class="hub"><div class="dot"></div><div><div class="hub-name">Permian &mdash; Midland &amp; Odessa, TX</div><div class="hub-desc">Primary market. Strong Texas oilfield presence.</div></div></li>
+        <li class="hub"><div class="dot dim"></div><div><div class="hub-name">Eagle Ford &middot; DJ Basin &middot; Appalachia</div><div class="hub-desc">Growing presence across all major US basins.</div></div></li>
+      </ul>
+    </div>
+    <div class="aud-stats">
+      <div><div class="aud-stat-num">Active</div><div class="aud-stat-lbl">Oilfield workers &mdash; not job boards or recruiters. Actual hands actively looking for work.</div></div>
+      <div><div class="aud-stat-num">Trusted</div><div class="aud-stat-lbl">Content comes from inside the oilfield. The audience follows because they trust the source.</div></div>
+      <div><div class="aud-stat-num">Engaged</div><div class="aud-stat-lbl">Tens of thousands of interactions every month. People are clicking, sharing, and tagging friends.</div></div>
+      <div><div class="aud-stat-num">Growing</div><div class="aud-stat-lbl">6 followers in January. 9,327 today. On pace to hit 10K before end of March 2026.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="why">
+  <div class="eyebrow">vs. The Alternatives</div>
+  <h2 class="sec-title">Why Not<br>Just Use <span>Indeed?</span></h2>
+  <div class="why-grid">
+    <div class="why-card"><div class="why-num">01 &mdash;</div><div class="why-title">Targeted Audience</div><div class="why-body">Indeed shows your listing to anyone searching "oil." The Dirty Hands Report reaches people already working in the oilfield &mdash; active workers, not passive job seekers clicking everything in sight.</div></div>
+    <div class="why-card"><div class="why-num">02 &mdash;</div><div class="why-title">Better ROI</div><div class="why-body">Facebook Ads targeting oilfield workers cost significantly more per click &mdash; and with no guarantee of a relevant audience. Our last post drove 570 direct clicks with 8 job listings.</div></div>
+    <div class="why-card"><div class="why-num">03 &mdash;</div><div class="why-title">Trust Factor</div><div class="why-body">Job boards are anonymous. DHR is a known voice in the oilfield community. When we post your listing, people know it's legit &mdash; not a bot or a recruiter fishing for resumes.</div></div>
+    <div class="why-card"><div class="why-num">04 &mdash;</div><div class="why-title">Speed</div><div class="why-body">Indeed listings sit for weeks. Our posts go live same day and hit thousands of workers within hours. If you need someone fast, this is how you get them.</div></div>
+  </div>
+</section>
+
+<section class="cta" id="contact">
+  <div class="eyebrow">Ready to Get Started?</div>
+  <h2 class="cta-title">Get Your <span>Listing</span><br>In Front of<br>The Oilfield.</h2>
+  <p class="cta-sub">Rates go up at 10,000 followers. Lock in founding pricing now.</p>
+  <div class="cta-btns">
+    <a href="mailto:admin&#64;dirtyhandsoil.com?subject=Get%20Started%20-%20The%20Dirty%20Hands%20Report" class="btn-o">Email to Book a Spot</a>
+  </div>
+  <div class="cta-note">admin&#64;dirtyhandsoil.com &nbsp;&middot;&nbsp; facebook.com/TheDirtyHandsReport</div>
+</section>
+
+<footer>
+  <div>
+    <div style="font-size:13px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#f0ece4;margin-bottom:16px;">The Dirty Hands<br><span style="color:#f05a1a;">Report</span></div>
+    <p style="font-size:13px;color:#555;line-height:1.8;">Real oilfield content from someone actually in the field. Bakken &middot; Permian &middot; Beyond.</p>
+  </div>
+  <div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#444;margin-bottom:16px;">Contact</div>
+    <p style="font-size:13px;color:#555;line-height:2;">admin&#64;dirtyhandsoil.com<br>facebook.com/TheDirtyHandsReport<br>Dickinson, ND</p>
+  </div>
+  <div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#444;margin-bottom:16px;">Advertise</div>
+    <p style="font-size:13px;color:#555;line-height:2;">Job Listings<br>Sponsored Posts<br>Brand Partnerships<br>Monthly Packages</p>
+  </div>
+</footer>
+<div class="foot-copy">
+  <span>&copy; 2026 The Dirty Hands Report &middot; dirtyhandsoil.com</span>
+  <span>Est. January 2026 &middot; Bakken, ND</span>
+</div>
+
+</body>
+</html>
