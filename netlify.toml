@@ -1,2 +1,7 @@
 [build]
   publish = "."
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self' 'unsafe-inline' fonts.googleapis.com fonts.gstatic.com"
