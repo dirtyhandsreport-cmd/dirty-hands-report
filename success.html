@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Application Received</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #080808; color: #f0ece4; font-family: Arial, sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+.box { max-width: 480px; background: #141414; border-left: 4px solid #C8102E; padding: 48px; text-align: center; }
+.check { font-size: 48px; margin-bottom: 24px; }
+h1 { font-size: 32px; font-weight: 900; text-transform: uppercase; margin-bottom: 16px; }
+h1 span { color: #C8102E; }
+p { font-size: 15px; color: #777; line-height: 1.8; }
+.brand { margin-top: 32px; font-size: 12px; color: #333; }
+.brand span { color: #C8102E; }
+#scrolling-logo {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 300px;
+  opacity: 0.10;
+  pointer-events: none;
+  z-index: 9999;
+}
+@media(max-width: 600px) {
+  #scrolling-logo { width: 160px; right: 10px; }
+}
+</style>
+</head>
+<body>
+<img id="scrolling-logo" src="smithies_logo.png" alt="">
+<div class="box">
+  <div class="check">✅</div>
+  <h1>Application <span>Received</span></h1>
+  <p>Thanks for applying to Smithies Hotshot Service LLC. A member of our team will review your application and be in touch soon.</p>
+  <a href="index.html" style="display:inline-block;margin-top:28px;background:#C8102E;color:#fff;font-size:13px;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:14px 28px;text-decoration:none;">← Back to Jobs</a>
+  <div class="brand" style="margin-top:32px;">Powered by <span>The Dirty Hands Report</span></div>
+</div>
+</body>
+</html>
