@@ -1,0 +1,54 @@
+name: Deploy DHR FB Proxy Worker
+
+on:
+  push:
+    paths:
+      - '.github/workflows/deploy-worker.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Cloudflare Workers
+        run: |
+          cat > worker.js << 'EOF'
+          const FB_TOKEN="EAAoWza7AAJoBRPc06LlBcsF3sTTmcCBygJxhfjV3p4wZBun3IWZBk8Tj6ZCxfk0l3yJLZA5AabtCAXaT7nfckobY9tldZA0wFBvoLDwzvx5I5lpUH1UF2cWENjMdmnXlbzkqAoeTRlJCHx0Ujx6ZC0y61V2Vk0sbCC5R3A1Q9OUfXTvM0xaRhgs1OSOiUYZBy8HFKsv813nkyn0N9R9ewHW9zhLzOJs4G1zBQZDZD";
+          const FB_PAGE_ID="895200170345079";
+          const FB_BASE="https://graph.facebook.com/v19.0";
+          addEventListener("fetch",event=>{event.respondWith(handleRequest(event.request));});
+          async function handleRequest(request){
+            const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"Content-Type","Access-Control-Allow-Methods":"POST, OPTIONS","Content-Type":"application/json"};
+            if(request.method==="OPTIONS")return new Response("",{headers:cors});
+            if(request.method!=="POST")return new Response(JSON.stringify({error:"POST only"}),{headers:cors});
+            let body;
+            try{body=await request.json();}catch(e){return new Response(JSON.stringify({error:"Invalid JSON"}),{headers:cors});}
+            const{action,message}=body;
+            try{
+              if(action==="sync"){
+                const[pageRes,insightRes,postsRes]=await Promise.all([
+                  fetch(FB_BASE+"/"+FB_PAGE_ID+"?fields=followers_count,fan_count,name&access_token="+FB_TOKEN),
+                  fetch(FB_BASE+"/"+FB_PAGE_ID+"/insights?metric=page_impressions,page_impressions_unique,page_engaged_users&period=month&access_token="+FB_TOKEN),
+                  fetch(FB_BASE+"/"+FB_PAGE_ID+"/posts?fields=message,created_time,likes.summary(true),comments.summary(true),shares,insights.metric(post_impressions,post_reach)&limit=100&access_token="+FB_TOKEN)
+                ]);
+                const page=await pageRes.json();
+                const insight=await insightRes.json();
+                const posts=await postsRes.json();
+                if(page.error)return new Response(JSON.stringify({error:page.error.message}),{headers:cors});
+                return new Response(JSON.stringify({page,insight,posts:posts.data||[]}),{headers:cors});
+              }
+              if(action==="post"&&message){
+                const res=await fetch(FB_BASE+"/"+FB_PAGE_ID+"/feed",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:message,access_token:FB_TOKEN})});
+                const data=await res.json();
+                return new Response(JSON.stringify(data),{headers:cors});
+              }
+              return new Response(JSON.stringify({error:"Unknown action"}),{headers:cors});
+            }catch(err){return new Response(JSON.stringify({error:err.message}),{headers:cors});}
+          }
+          EOF
+
+          curl -s -X PUT \
+            "https://api.cloudflare.com/client/v4/accounts/977130ff9c5d01fabbff636fd4f85e48/workers/scripts/dhr-proxy" \
+            -H "X-Auth-Email: admin@dirtyhandsoil.com" \
+            -H "X-Auth-Key: cfk_0UD8wICUwoAY8zGtGMB5mTrc5EJv26aGcEp3g8jS1d1d2556" \
+            -H "Content-Type: application/javascript" \
+            --data-binary @worker.js
