@@ -1,7 +1,7 @@
 // DHR Facebook Proxy — Netlify Serverless Function
 // Proxies Graph API calls server-side to avoid CORS restrictions in the browser
 
-const FB_TOKEN = "EAAoWza7AAJoBRMu0ScADA548mWpSIh78BundoyfPOo5eXyVZAu1osZA2EF1hG5AZC0IHBFubFaU74UkDeZAK9l3yZBhrLIMZBz9lPGpwGZClvpQLUfz8GJtEYtpUHPrm9d04CizY2DE1htG8qCvDxv8YZCsEvTUby0N3sqpKzjZAtTOAC9nVsMZCZBM5K5vzenAcmjcpN8SQZCqDTD5fKCXAKQ54jpYdshZBaFtCRWmTiSaiJQ7iCpZAvgEgUZD";
+const FB_TOKEN = "EAAoWza7AAJoBRBoeV4RVvMERbJlWWWbZCLrYM6xFaeUE9y5hjhdjtcydCOKwhDZC6FHZCjvUPc7QEDaPSpEx5wYf3pimsjHQNRb4TfN7qw2tTMvvQiZAZBYZAOxMNZAWQ5XfEuNAWsfM0akX4rQ08uYpRBuFP1XIfxdcCEbKhbeeFFFtYs0MXz3vVtoADZCps6qAk8ZAnZBgZDZD";
 const FB_PAGE_ID = "895200170345079";
 const FB_BASE = "https://graph.facebook.com/v19.0";
 
