@@ -4,4 +4,4 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self' 'unsafe-inline' fonts.googleapis.com fonts.gstatic.com cdnjs.cloudflare.com https://*.workers.dev; connect-src 'self' https://*.workers.dev https://graph.facebook.com https://api.anthropic.com https://api-ssl.bitly.com"
+    Content-Security-Policy = "... connect-src 'self' https://*.workers.dev https://cdnjs.cloudflare.com https://api.anthropic.com ..."
