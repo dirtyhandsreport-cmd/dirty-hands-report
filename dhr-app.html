@@ -331,10 +331,11 @@ async function fetchRSS(){
 
 async function fetchHeadlines(query,count=20){
   const todayStr=new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
-  const yesterdayStr=new Date(Date.now()-864e5).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+  const day2Str=new Date(Date.now()-864e5).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+  const day3Str=new Date(Date.now()-864e5*2).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
   const nowTime=new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"});
-  const raw=await ai(`Search for recent oil and gas news in the last 48 hours: ${query}`,
-    `Oil and gas news aggregator. TODAY is ${todayStr}, current time is ${nowTime}. WINDOW: Last 48 hours — ${yesterdayStr} AND ${todayStr} are both in scope. STEP 1: Find everything published in this 48-hour window. STEP 2: Sort newest first. Breaking news from the last few hours is highest priority, but strong stories from yesterday are fair game — do NOT ignore them. Return ONLY raw JSON array, no other text. Each object: "title","source","date"(exact like "Apr 7, 2026"),"time"(like "6:42 AM" or ""),"summary"(max 20 words),"url"(real URL or "#"),"sentiment"("bullish","bearish","neutral"). Up to ${count} items newest first. Start [ end ].`,4096);
+  const raw=await ai(`Search for recent oil and gas news in the last 72 hours: ${query}`,
+    `Oil and gas news aggregator. TODAY is ${todayStr}, current time is ${nowTime}. WINDOW: Last 72 hours — ${day3Str}, ${day2Str}, AND ${todayStr} are all in scope. STEP 1: Find everything published in this 3-day window. STEP 2: Sort newest first. Breaking news from the last few hours is highest priority, but stories from the last 3 days are fair game — do NOT ignore them. Return ONLY raw JSON array, no other text. Each object: "title","source","date"(exact like "Apr 7, 2026"),"time"(like "6:42 AM" or ""),"summary"(max 20 words),"url"(real URL or "#"),"sentiment"("bullish","bearish","neutral"). Up to ${count} items newest first. Start [ end ].`,4096);
   const p=safeJSON(raw);
   if(!p||!p.length)throw new Error("Parse failed: "+raw.slice(0,200));
   const str = v => (v==null ? "" : typeof v==="object" ? JSON.stringify(v) : String(v));
@@ -2736,8 +2737,9 @@ RULES:
     setProgress({cur:1,total:1,cat:catId.toUpperCase()});
     try{
       const datePrefix=new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
-      const yPrefix=new Date(Date.now()-864e5).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
-      const results=await fetchHeadlines(datePrefix+" OR "+yPrefix+" "+c.query,10);
+      const day2Pfx=new Date(Date.now()-864e5).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+      const day3Pfx=new Date(Date.now()-864e5*2).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+      const results=await fetchHeadlines(datePrefix+" OR "+day2Pfx+" OR "+day3Pfx+" "+c.query,10);
       // seed seen from ALL existing items — prevents duplicates on re-run of same category
       const seen=new Set(items.map(h=>h.title.slice(0,40).toLowerCase()));
       const newItems=[];
@@ -2773,8 +2775,9 @@ RULES:
       if(i>0) await new Promise(r=>setTimeout(r,2000));// rate limit buffer
       try{
         const datePrefix=new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
-        const yPrefix=new Date(Date.now()-864e5).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
-        const results=await fetchHeadlines(datePrefix+" OR "+yPrefix+" "+c.query,10);
+        const day2Pfx=new Date(Date.now()-864e5).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+        const day3Pfx=new Date(Date.now()-864e5*2).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+        const results=await fetchHeadlines(datePrefix+" OR "+day2Pfx+" OR "+day3Pfx+" "+c.query,10);
         results.forEach(h=>{
           const key=h.title.slice(0,40).toLowerCase();
           if(!seen.has(key)){
