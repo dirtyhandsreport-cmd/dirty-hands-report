@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body{background:#080808;color:#f0ece4;font-family:'Arial Narrow',Arial,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:20px;box-sizing:border-box;}
+  h2{color:#f05a1a;letter-spacing:.1em;font-size:18px;margin-bottom:8px;}
+  p{color:rgba(240,236,228,.5);font-size:13px;text-align:center;margin-bottom:24px;}
+  button{background:#f05a1a;border:none;color:#fff;font-size:16px;font-weight:900;letter-spacing:.1em;padding:16px 32px;border-radius:10px;cursor:pointer;width:100%;max-width:320px;}
+  button:disabled{opacity:.4;cursor:not-allowed;}
+  #status{margin-top:20px;font-size:14px;text-align:center;line-height:1.6;max-width:320px;word-break:break-word;}
+  .ok{color:#22c55e;font-weight:700;} .err{color:#ef4444;font-weight:700;}
+</style>
+</head>
+<body>
+<h2>DHR WORKER DEPLOY</h2>
+<p>Pushes FB proxy code to Cloudflare Worker.</p>
+<button id="btn" onclick="deploy()">DEPLOY NOW</button>
+<div id="status"></div>
+<script>
+async function deploy(){
+  const btn=document.getElementById('btn');
+  const status=document.getElementById('status');
+  btn.disabled=true; btn.textContent='DEPLOYING...'; status.innerHTML='Pushing...';
+  const code=`const FB_TOKEN="EAAoWza7AAJoBRMu0ScADA548mWpSIh78BundoyfPOo5eXyVZAu1osZA2EF1hG5AZC0IHBFubFaU74UkDeZAK9l3yZBhrLIMZBz9lPGpwGZClvpQLUfz8GJtEYtpUHPrm9d04CizY2DE1htG8qCvDxv8YZCsEvTUby0N3sqpKzjZAtTOAC9nVsMZCZBM5K5vzenAcmjcpN8SQZCqDTD5fKCXAKQ54jpYdshZBaFtCRWmTiSaiJQ7iCpZAvgEgUZD";
+const FB_PAGE_ID="895200170345079";
+const FB_BASE="https://graph.facebook.com/v19.0";
+const RSS_FEEDS=[
+  {url:"https://oilprice.com/rss/main",source:"OilPrice.com"},
+  {url:"https://www.rigzone.com/news/rss.asp",source:"Rigzone"},
+  {url:"https://feeds.reuters.com/reuters/businessNews",source:"Reuters"},
+  {url:"https://apnews.com/hub/energy",source:"AP News"},
+  {url:"https://www.spglobal.com/commodity-insights/en/news-research/rss-feed",source:"S&P Global"},
+  {url:"https://www.businesswire.com/rss/home/?rss=G22",source:"BusinessWire"},
+  {url:"https://www.prnewswire.com/rss/news-releases-list.rss",source:"PR Newswire"},
+  {url:"https://www.ogj.com/rss",source:"Oil & Gas Journal"},
+  {url:"https://worldoil.com/rss",source:"World Oil"},
+  {url:"https://www.hartenergy.com/rss",source:"Hart Energy"},
+  {url:"https://www.oilfieldtechnology.com/rss/",source:"Oilfield Technology"},
+  {url:"https://www.pgjonline.com/rss",source:"PGJ Online"},
+  {url:"https://www.cnbc.com/id/10000664/device/rss/rss.html",source:"CNBC"},
+  {url:"https://shalemag.com/feed",source:"Shale Magazine"},
+  {url:"https://oilandgas360.com/feed",source:"Oil & Gas 360"},
+  {url:"https://www.energyintel.com/rss-feed",source:"Energy Intelligence"},
+  {url:"https://www.naturalgasintel.com/rss",source:"Natural Gas Intel"},
+  {url:"https://bakkenwire.com/feed",source:"Bakken Wire"},
+  {url:"https://marcellusdrilling.com/feed",source:"Marcellus Drilling"},
+  {url:"https://boereport.com/feed",source:"BOE Report"},
+  {url:"https://www.kfyrtv.com/rss",source:"KFYR TV"},
+  {url:"https://kxnet.com/feed",source:"KX News"},
+  {url:"https://bismarcktribune.com/search/?f=rss",source:"Bismarck Tribune"},
+  {url:"https://www.willistonherald.com/search/?f=rss",source:"Williston Herald"},
+  {url:"https://www.thedickinsonpress.com/search/?f=rss",source:"Dickinson Press"},
+  {url:"https://northdakotamonitor.com/feed",source:"ND Monitor"},
+  {url:"https://www.minotdailynews.com/rss",source:"Minot Daily News"},
+  {url:"https://willistongraphic.com/feed",source:"Williston Graphic"},
+  {url:"https://www.eia.gov/rss/todayinenergy.xml",source:"EIA"},
+  {url:"https://www.api.org/rss",source:"API"}
+];
+function sx(s=""){return s.replace(/<[^>]*>/g,"").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&nbsp;/g," ").trim();}
+function pd(s=""){try{const d=new Date(s);if(!isNaN(d))return d.toISOString();}catch(_){}return new Date().toISOString();}
+function parseRSS(xml,feed){
+  const items=[];const re=/<item[^>]*>([\\s\\S]*?)<\\/item>/gi;let m;
+  while((m=re.exec(xml))!==null){
+    const b=m[1];
+    const get=tag=>{const r=b.match(new RegExp("<"+tag+"[^>]*>(?:<!\\\\[CDATA\\\\[)?([\\\\s\\\\S]*?)(?:\\\\]\\\\]>)?</"+tag+">","i"));return r?sx(r[1]):"";};
+    const title=get("title");if(!title)continue;
+    items.push({title:title.slice(0,160),source:feed.source,url:get("link")||get("guid")||"#",date:pd(get("pubDate")||get("dc:date")||get("published")),summary:sx(get("description")||get("summary")||"").slice(0,200),sentiment:"neutral"});
+  }
+  return items;
+}
+addEventListener("fetch",event=>{event.respondWith(handleRequest(event.request));});
+async function handleRequest(request){
+  const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"Content-Type","Access-Control-Allow-Methods":"POST, OPTIONS","Content-Type":"application/json"};
+  if(request.method==="OPTIONS")return new Response("",{headers:cors});
+  if(request.method!=="POST")return new Response(JSON.stringify({error:"POST only"}),{headers:cors});
+  let body;try{body=await request.json();}catch(e){return new Response(JSON.stringify({error:"Invalid JSON"}),{headers:cors});}
+  const{action,message,url,key,payload}=body;
+  try{
+    if(action==="sync"){
+      const[pageRes,insightRes,postsRes]=await Promise.all([
+        fetch(FB_BASE+"/"+FB_PAGE_ID+"?fields=followers_count,fan_count,name&access_token="+FB_TOKEN),
+        fetch(FB_BASE+"/"+FB_PAGE_ID+"/insights?metric=page_impressions,page_impressions_unique,page_engaged_users&period=month&access_token="+FB_TOKEN),
+        fetch(FB_BASE+"/"+FB_PAGE_ID+"/posts?fields=message,created_time,likes.summary(true),comments.summary(true),shares,insights.metric(post_impressions,post_reach)&limit=100&access_token="+FB_TOKEN)
+      ]);
+      const page=await pageRes.json();const insight=await insightRes.json();const posts=await postsRes.json();
+      if(page.error)return new Response(JSON.stringify({error:page.error.message}),{headers:cors});
+      return new Response(JSON.stringify({page,insight,posts:posts.data||[]}),{headers:cors});
+    }
+    if(action==="post"&&message){
+      const res=await fetch(FB_BASE+"/"+FB_PAGE_ID+"/feed",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message,access_token:FB_TOKEN})});
+      return new Response(JSON.stringify(await res.json()),{headers:cors});
+    }
+    if(action==="fetch_rss"){
+      const results=await Promise.all(RSS_FEEDS.map(feed=>fetch(feed.url,{headers:{"User-Agent":"DHR-Wire/1.0"}}).then(r=>r.ok?r.text():"").then(xml=>parseRSS(xml,feed)).catch(()=>[])));
+      const seen=new Set();const all=[];
+      for(const list of results)for(const item of list){const k=item.title.toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,60);if(!seen.has(k)){seen.add(k);all.push(item);}}
+      all.sort((a,b)=>new Date(b.date)-new Date(a.date));
+      return new Response(JSON.stringify({ok:true,count:all.length,items:all}),{headers:{...cors,"Cache-Control":"public, max-age=180"}});
+    }
+    if(action==="fetch_article"&&url){
+      const res=await fetch(url,{headers:{"User-Agent":"Mozilla/5.0 (compatible; DHRBot/1.0)"}});
+      if(!res.ok)return new Response(JSON.stringify({ok:false,blocked:true}),{headers:cors});
+      const html=await res.text();
+      const text=html.replace(/<script[^>]*>[\\s\\S]*?<\\/script>/gi,"").replace(/<style[^>]*>[\\s\\S]*?<\\/style>/gi,"").replace(/<[^>]+>/g," ").replace(/\\s{3,}/g," ").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&nbsp;/g," ").trim();
+      return new Response(JSON.stringify({ok:true,text:text.slice(0,6000)}),{headers:cors});
+    }
+    if(action==="anthropic"&&key&&payload){
+      const aRes=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","anthropic-version":"2023-06-01","anthropic-beta":"web-search-2025-03-05","x-api-key":key},body:JSON.stringify(payload)});
+      return new Response(JSON.stringify(await aRes.json()),{status:aRes.status,headers:cors});
+    }
+    return new Response(JSON.stringify({error:"Unknown action"}),{headers:cors});
+  }catch(err){return new Response(JSON.stringify({error:err.message}),{headers:cors});}
+}
+`
+  try{
+    const res=await fetch("https://api.cloudflare.com/client/v4/accounts/977130ff9c5d01fabbff636fd4f85e48/workers/scripts/dhr-proxy",{
+      method:"PUT",
+      headers:{"X-Auth-Email":"admin@dirtyhandsoil.com","X-Auth-Key":"cfk_0UD8wICUwoAY8zGtGMB5mTrc5EJv26aGcEp3g8jS1d1d2556","Content-Type":"application/javascript"},
+      body:code
+    });
+    const data=await res.json();
+    if(data.success){
+      status.innerHTML='<span class="ok">✓ DEPLOYED</span><br><br>Load DHR Factory and force sync.';
+      btn.textContent='✓ DONE';
+    }else{
+      const msg=(data.errors||[]).map(e=>e.message).join(', ')||JSON.stringify(data);
+      status.innerHTML='<span class="err">FAILED: '+msg+'</span>';
+      btn.disabled=false; btn.textContent='RETRY';
+    }
+  }catch(err){
+    status.innerHTML='<span class="err">ERROR: '+err.message+'</span>';
+    btn.disabled=false; btn.textContent='RETRY';
+  }
+}
+</script>
+</body>
+</html>
