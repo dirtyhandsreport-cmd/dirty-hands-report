@@ -2198,6 +2198,47 @@ function JobsScreen({onToast,onSaveToReply}){
   const toggleSelect=job=>{
     setSelected(p=>p.find(j=>j.id===job.id)?p.filter(j=>j.id!==job.id):[...p,{...results.find(r=>r.id===job.id)||job}]);
   };
+  const [intelLoading,setIntelLoading]=useState(false);
+  const [intelData,setIntelData]=useState(null);
+  const [intelAt,setIntelAt]=useState(null);
+
+  const fetchHiringIntel=async()=>{
+    const _key=(typeof window!=="undefined"&&window.ANTHROPIC_KEY)||"";
+    if(!_key){onToast("NO API KEY");return;}
+    setIntelLoading(true);setIntelData(null);
+    try{
+      const res=await fetch("https://dhr-proxy.weathered-sky-e16c.workers.dev",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({action:"hiring_intel",apiKey:_key})
+      });
+      const data=await res.json();
+      if(data.ok&&data.companies&&data.companies.length){
+        setIntelData(data);setIntelAt(new Date().toLocaleTimeString());
+      } else onToast("INTEL SCAN FAILED — TRY AGAIN");
+    }catch(e){onToast("INTEL ERROR: "+e.message);}
+    setIntelLoading(false);
+  };
+
+  const generatePitch=async(company)=>{
+    const _key=(typeof window!=="undefined"&&window.ANTHROPIC_KEY)||"";
+    if(!_key){onToast("NO API KEY");return;}
+    onToast("GENERATING PITCH...");
+    try{
+      const res=await fetch("https://dhr-proxy.weathered-sky-e16c.workers.dev",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({action:"anthropic",apiKey:_key,payload:{
+          model:"claude-sonnet-4-20250514",max_tokens:400,
+          system:"You write outreach messages for The Dirty Hands Report — a 10K-follower oilfield Facebook brand in the Bakken. DHR sells sponsored job listing posts to oilfield companies. Messages should be direct, professional, and reference their active hiring. Output message text only.",
+          messages:[{role:"user",content:`Write a short cold outreach DM to ${company.company} about advertising their ${company.postings} open positions on DHR. They're hiring: ${company.roles}. DHR reaches 10K+ oilfield workers in the Bakken. Mention our sponsored post packages start at $150. Keep it under 100 words, no fluff.`}]
+        }})
+      });
+      const d=await res.json();
+      const msg=d.content&&d.content[0]&&d.content[0].text;
+      if(msg){clipCopy(msg);onToast("✓ PITCH COPIED");}
+      else onToast("PITCH FAILED");
+    }catch(e){onToast("PITCH ERROR: "+e.message);}
+  };
+
   const isSelected=job=>selected.some(j=>j.id===job.id);
 
   const writeWeeklyPost=async()=>{
@@ -2280,11 +2321,46 @@ function JobsScreen({onToast,onSaveToReply}){
       )
 
       , React.createElement('div', { className: "seg-row",}
-        , [{k:"find",l:"FIND JOBS"},{k:"weekly",l:`WEEKLY POST${selected.length?` (${selected.length})`:""}`},{k:"listings",l:"MY LISTINGS"}]
+        , [{k:"find",l:"FIND JOBS"},{k:"intel",l:"🔥 HIRING INTEL"},{k:"weekly",l:`WEEKLY POST${selected.length?` (${selected.length})`:""}`},{k:"listings",l:"MY LISTINGS"}]
           .map(t=>React.createElement('button', { key: t.k, className: `seg-btn ${tab===t.k?"on":""}`, onClick: ()=>setTab(t.k),}, t.l))
       )
 
       , React.createElement('div', { style: {padding:"12px 16px",maxWidth:900},}
+
+        /* ── HIRING INTEL ── */
+        , tab==="intel"&&(
+          React.createElement('div', null
+            ,React.createElement('div',{style:{fontSize:10,color:"rgba(240,236,228,.4)",fontFamily:"'Barlow',sans-serif",lineHeight:1.5,marginBottom:12}},"Live scan of who's actively hiring — your sales hit list. Companies with 10+ openings are hot pitch targets.")
+            ,React.createElement('button',{onClick:fetchHiringIntel,disabled:intelLoading,style:{width:"100%",background:intelLoading?"#0d0d14":"rgba(240,90,26,.12)",border:`1px solid ${intelLoading?"#1e1e2a":"rgba(240,90,26,.35)"}`,borderRadius:12,color:intelLoading?"rgba(240,236,228,.2)":"#f05a1a",fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,fontWeight:900,letterSpacing:".14em",padding:"16px 0",cursor:intelLoading?"not-allowed":"pointer",marginBottom:8}},intelLoading?"🔍 SCANNING JOB BOARDS...":"🔥 SCAN HIRING ACTIVITY")
+            ,intelLoading&&React.createElement('div',{style:{fontSize:9,color:"rgba(240,90,26,.4)",fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:".12em",textAlign:"center",marginBottom:12}},"SEARCHING INDEED · RIGZONE · COMPANY PORTALS — THIS TAKES ~30 SECONDS")
+            ,intelAt&&!intelLoading&&React.createElement('div',{style:{fontSize:8,color:"rgba(255,255,255,.2)",fontFamily:"'Barlow',sans-serif",marginBottom:10,textAlign:"right"}},"Last scan: "+intelAt)
+            ,!intelData&&!intelLoading&&React.createElement('div',{style:{textAlign:"center",padding:"48px 0",display:"flex",flexDirection:"column",alignItems:"center",gap:10}}
+              ,React.createElement('div',{style:{fontSize:32}},"🔥")
+              ,React.createElement('div',{style:{fontSize:11,color:"rgba(255,255,255,.12)",fontFamily:"'Barlow',sans-serif"}},"See which companies are posting the most jobs right now — then pitch them before they find you")
+            )
+            ,intelData&&intelData.companies&&React.createElement('div',null
+              ,intelData.companies.map((c,i)=>{
+                const heatColor=c.heat>=3?"#ef4444":c.heat>=2?"#f05a1a":"#f0b429";
+                const heatLabel=c.heat>=3?"🔥🔥🔥 HOT":c.heat>=2?"🔥🔥 WARM":"🔥 COOL";
+                return React.createElement('div',{key:i,style:{background:"#0f0f1a",borderRadius:12,borderLeft:`3px solid ${heatColor}`,padding:"14px",marginBottom:8}}
+                  ,React.createElement('div',{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}
+                    ,React.createElement('div',null
+                      ,React.createElement('div',{style:{fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,fontWeight:900,color:"#f0ece4",letterSpacing:".04em"}},c.company)
+                      ,React.createElement('div',{style:{fontFamily:"'Barlow Condensed',sans-serif",fontSize:10,fontWeight:700,color:heatColor,letterSpacing:".08em",marginTop:2}},heatLabel+" — "+c.postings+" OPEN POSITIONS")
+                    )
+                    ,c.trend&&React.createElement('div',{style:{fontFamily:"'Barlow Condensed',sans-serif",fontSize:9,fontWeight:800,color:c.trend==="surging"?"#22c55e":c.trend==="slowing"?"#ef4444":"rgba(255,255,255,.3)",letterSpacing:".1em",textTransform:"uppercase"}},c.trend)
+                  )
+                  ,c.roles&&React.createElement('div',{style:{fontSize:11,color:"rgba(240,236,228,.45)",fontFamily:"'Barlow',sans-serif",marginBottom:4}},c.roles)
+                  ,c.locations&&React.createElement('div',{style:{fontSize:10,color:"rgba(255,255,255,.25)",fontFamily:"'Barlow',sans-serif",marginBottom:8}},c.locations)
+                  ,React.createElement('div',{style:{display:"flex",gap:6}}
+                    ,React.createElement('button',{onClick:()=>generatePitch(c),style:{flex:2,background:"rgba(240,90,26,.12)",border:"1px solid rgba(240,90,26,.3)",borderRadius:7,color:"#f05a1a",fontFamily:"'Barlow Condensed',sans-serif",fontSize:10,fontWeight:800,padding:"8px 0",cursor:"pointer",letterSpacing:".06em"}},"→ GENERATE PITCH")
+                    ,c.portal&&c.portal!=="#"&&React.createElement('a',{href:c.portal,target:"_blank",rel:"noopener noreferrer",style:{flex:1,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:7,color:"rgba(255,255,255,.3)",fontFamily:"'Barlow Condensed',sans-serif",fontSize:10,fontWeight:800,padding:"8px 0",cursor:"pointer",letterSpacing:".06em",textDecoration:"none",display:"flex",alignItems:"center",justifyContent:"center"}},"PORTAL")
+                  )
+                );
+              })
+            )
+          )
+        )
 
         /* ── FIND JOBS ── */
         , tab==="find"&&(
@@ -3927,11 +4003,14 @@ function DailyScreen({dailySlots,archive,onMarkUsed,onMarkUnused,onToast,fbToken
 
   const generateDataPost=async()=>{
     if(!fieldData)return;
-    const {wti,rigs,inventory}=fieldData;
-    const wtiLine=wti?`WTI: $${wti.price} (${wti.change>=0?"+":""}${wti.change} today)`:"WTI unavailable";
-    const rigLine=rigs?`US Rig Count: ${rigs.count} (${rigs.change>=0?"+":""}${rigs.change} vs last week)`:"Rig count unavailable";
-    const invLine=inventory?`Crude Stocks: ${inventory.value}M bbl (${inventory.change>=0?"+":""}${inventory.change}M ${inventory.change<0?"draw":"build"} week-over-week)`:"Inventory unavailable";
-    const prompt=`Write a DHR Facebook post about this week's oilfield market numbers:\n\n${wtiLine}\n${rigLine}\n${invLine}\n\nFormat: emoji-anchored headers, bold data points, what it means for Bakken workers on the ground. End with a hard declarative statement. No hashtags. Under 200 words.`;
+    const {wti,rigs,inventory,diesel,natgas}=fieldData;
+    const wtiLine=wti?`WTI: $${wti.price} (${wti.change>=0?"+":""}${wti.change} vs prior day)`:"";
+    const rigLine=rigs?`US Rig Count: ${rigs.count} (${rigs.change>=0?"+":""}${rigs.change} vs last week)`:"";
+    const invLine=inventory?`Crude Stocks: ${inventory.value}M bbl (${inventory.change>=0?"+":""}${inventory.change}M ${inventory.change<0?"draw":"build"})`:"";
+    const dieselLine=diesel?`Diesel: $${diesel.price}/gal (${diesel.change>=0?"+":""}${diesel.change} this week)`:"";
+    const ngLine=natgas?`Henry Hub Gas: $${natgas.price}/MMBtu (${natgas.change>=0?"+":""}${natgas.change})`:"";
+    const dataPoints=[wtiLine,rigLine,invLine,dieselLine,ngLine].filter(Boolean).join("\n");
+    const prompt=`Write a DHR Facebook post about this week's oilfield market numbers:\n\n${dataPoints}\n\nFormat: emoji-anchored headers, bold data points, what it means for Bakken workers on the ground. End with a hard declarative statement. No hashtags. Under 200 words.`;
     const _key=(typeof window!=="undefined"&&window.ANTHROPIC_KEY)||"";
     if(!_key){onToast("NO API KEY");return;}
     onToast("GENERATING DATA POST...");
@@ -3960,11 +4039,23 @@ function DailyScreen({dailySlots,archive,onMarkUsed,onMarkUnused,onToast,fbToken
         ,!fieldData&&!fieldLoading&&React.createElement('div',{style:{fontSize:10,color:"rgba(255,255,255,.15)",fontFamily:"'Barlow',sans-serif",textAlign:"center",padding:"8px 0"}},"Live WTI · Rig Count · Crude Inventory — "+(eiaKey?"tap refresh":"add EIA key in SYNC"))
         ,fieldLoading&&React.createElement('div',{style:{fontSize:9,color:"rgba(240,90,26,.4)",fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:".1em",textAlign:"center",padding:"8px 0"}},"PULLING LIVE MARKET DATA...")
         ,fieldData&&React.createElement('div',null
-          ,React.createElement('div',{style:{display:"flex",gap:6,marginBottom:8}}
+          ,React.createElement('div',{style:{display:"flex",gap:6,marginBottom:6}}
             ,[
               fieldData.wti&&{label:"WTI",value:"$"+fieldData.wti.price,sub:(fieldData.wti.change>=0?"+":"")+fieldData.wti.change+" today",color:fieldData.wti.change>=0?"#22c55e":"#ef4444"},
               fieldData.rigs&&{label:"RIGS",value:fieldData.rigs.count,sub:(fieldData.rigs.change>=0?"+":"")+fieldData.rigs.change+" wk",color:fieldData.rigs.change>=0?"#22c55e":"#ef4444"},
               fieldData.inventory&&{label:"CRUDE",value:fieldData.inventory.value+"Mb",sub:(fieldData.inventory.change>=0?"+":"")+fieldData.inventory.change+"M",color:fieldData.inventory.change<0?"#22c55e":"#ef4444"},
+            ].filter(Boolean).map((m,i)=>
+              React.createElement('div',{key:i,style:{flex:1,background:"rgba(255,255,255,.04)",borderRadius:8,padding:"8px 6px",textAlign:"center"}}
+                ,React.createElement('div',{style:{fontFamily:"'Barlow Condensed',sans-serif",fontSize:8,fontWeight:700,color:"rgba(255,255,255,.3)",letterSpacing:".1em",marginBottom:2}},m.label)
+                ,React.createElement('div',{style:{fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,fontWeight:900,color:"#f0ece4",lineHeight:1}},m.value)
+                ,React.createElement('div',{style:{fontFamily:"'Barlow Condensed',sans-serif",fontSize:9,fontWeight:700,color:m.color,marginTop:2}},m.sub)
+              )
+            )
+          )
+          ,(fieldData.diesel||fieldData.natgas)&&React.createElement('div',{style:{display:"flex",gap:6,marginBottom:8}}
+            ,[
+              fieldData.diesel&&{label:"DIESEL",value:"$"+fieldData.diesel.price,sub:(fieldData.diesel.change>=0?"+":"")+fieldData.diesel.change+" wk",color:fieldData.diesel.change<=0?"#22c55e":"#ef4444"},
+              fieldData.natgas&&{label:"HH GAS",value:"$"+fieldData.natgas.price,sub:(fieldData.natgas.change>=0?"+":"")+fieldData.natgas.change+" today",color:fieldData.natgas.change>=0?"#22c55e":"#ef4444"},
             ].filter(Boolean).map((m,i)=>
               React.createElement('div',{key:i,style:{flex:1,background:"rgba(255,255,255,.04)",borderRadius:8,padding:"8px 6px",textAlign:"center"}}
                 ,React.createElement('div',{style:{fontFamily:"'Barlow Condensed',sans-serif",fontSize:8,fontWeight:700,color:"rgba(255,255,255,.3)",letterSpacing:".1em",marginBottom:2}},m.label)
@@ -4410,6 +4501,10 @@ function RadarScreen({onToast,onGen}){
   const [redditLoading,setRedditLoading]=useState(false);
   const [redditPosts,setRedditPosts]=useState([]);
   const [redditAt,setRedditAt]=useState(null);
+  // NEWS FEED state
+  const [newsLoading,setNewsLoading]=useState(false);
+  const [newsItems,setNewsItems]=useState([]);
+  const [newsAt,setNewsAt]=useState(null);
 
   const scan=async()=>{
     setLoading(true);setStories([]);
@@ -4506,6 +4601,20 @@ openLanes must have at least 4 entries. Be specific — not generic advice.`;
     setRedditLoading(false);
   };
 
+  const fetchNews=async()=>{
+    setNewsLoading(true);setNewsItems([]);
+    try{
+      const res=await fetch("https://dhr-proxy.weathered-sky-e16c.workers.dev",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({action:"news_feed"})
+      });
+      const data=await res.json();
+      if(data.items&&data.items.length){setNewsItems(data.items);setNewsAt(new Date().toLocaleTimeString());}
+      else onToast("NEWS FEED RETURNED EMPTY — TRY AGAIN");
+    }catch(e){onToast("NEWS FEED ERROR: "+e.message);}
+    setNewsLoading(false);
+  };
+
   const fireEmoji=n=>n>=3?"🔥🔥🔥":n>=2?"🔥🔥":"🔥";
   const fireColor=n=>n>=3?"#ef4444":n>=2?"#f05a1a":"#f0b429";
 
@@ -4515,7 +4624,7 @@ openLanes must have at least 4 entries. Be specific — not generic advice.`;
       ,React.createElement('div',{className:"hdr-title"},"📡 RADAR")
     )
     ,React.createElement('div',{style:{display:"flex",gap:0,margin:"0 12px 12px",background:"#0d0d18",borderRadius:10,padding:3,border:"1px solid rgba(255,255,255,.06)"}}
-      ,["trends","reddit","rival"].map(m=>React.createElement('button',{key:m,onClick:()=>setMode(m),style:{flex:1,background:mode===m?"rgba(240,90,26,.15)":"transparent",border:mode===m?"1px solid rgba(240,90,26,.3)":"1px solid transparent",borderRadius:8,color:mode===m?"#f05a1a":"rgba(255,255,255,.25)",fontFamily:"'Barlow Condensed',sans-serif",fontSize:11,fontWeight:900,letterSpacing:".12em",padding:"8px 0",cursor:"pointer",textTransform:"uppercase"}},m==="trends"?"⚡ TRENDS":m==="reddit"?"🔴 REDDIT":"👁 RIVAL"))
+      ,["trends","reddit","news","rival"].map(m=>React.createElement('button',{key:m,onClick:()=>setMode(m),style:{flex:1,background:mode===m?"rgba(240,90,26,.15)":"transparent",border:mode===m?"1px solid rgba(240,90,26,.3)":"1px solid transparent",borderRadius:8,color:mode===m?"#f05a1a":"rgba(255,255,255,.25)",fontFamily:"'Barlow Condensed',sans-serif",fontSize:10,fontWeight:900,letterSpacing:".1em",padding:"8px 0",cursor:"pointer",textTransform:"uppercase"}},m==="trends"?"⚡ TRENDS":m==="reddit"?"🔴 REDDIT":m==="news"?"📰 NEWS":"👁 RIVAL"))
     )
     ,mode==="trends"&&React.createElement('div',{style:{padding:"0 18px"}}
       ,React.createElement('button',{onClick:scan,disabled:loading,style:{width:"100%",background:loading?"#0d0d14":"rgba(240,90,26,.12)",border:`1px solid ${loading?"#1e1e2a":"rgba(240,90,26,.35)"}`,borderRadius:12,color:loading?"rgba(240,236,228,.2)":"#f05a1a",fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,fontWeight:900,letterSpacing:".14em",padding:"16px 0",cursor:loading?"not-allowed":"pointer",marginBottom:loading?8:stories.length?8:0}},loading?"📡 SCANNING OILFIELD NEWS...":"⚡ SCAN FOR TRENDS")
@@ -4585,6 +4694,27 @@ openLanes must have at least 4 entries. Be specific — not generic advice.`;
         ,React.createElement('div',{style:{display:"flex",gap:6,marginTop:6}}
           ,React.createElement('button',{onClick:()=>{if(onGen)onGen({title:p.title,summary:p.snippet||p.title,source:"REDDIT — r/"+p.subreddit,url:p.url});},style:{flex:2,background:"rgba(240,90,26,.12)",border:"1px solid rgba(240,90,26,.3)",borderRadius:7,color:"#f05a1a",fontFamily:"'Barlow Condensed',sans-serif",fontSize:10,fontWeight:800,padding:"8px 0",cursor:"pointer",letterSpacing:".06em"}},"→ WRITE THIS")
           ,React.createElement('a',{href:p.url,target:"_blank",rel:"noopener noreferrer",style:{flex:1,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:7,color:"rgba(255,255,255,.3)",fontFamily:"'Barlow Condensed',sans-serif",fontSize:10,fontWeight:800,padding:"8px 0",cursor:"pointer",letterSpacing:".06em",textDecoration:"none",display:"flex",alignItems:"center",justifyContent:"center"}},"VIEW")
+        )
+      ))
+    )
+    ,mode==="news"&&React.createElement('div',{style:{padding:"0 18px"}}
+      ,React.createElement('button',{onClick:fetchNews,disabled:newsLoading,style:{width:"100%",background:newsLoading?"#0d0d14":"rgba(240,90,26,.12)",border:`1px solid ${newsLoading?"#1e1e2a":"rgba(240,90,26,.35)"}`,borderRadius:12,color:newsLoading?"rgba(240,236,228,.2)":"#f05a1a",fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,fontWeight:900,letterSpacing:".14em",padding:"16px 0",cursor:newsLoading?"not-allowed":"pointer",marginBottom:newsLoading?8:newsItems.length?8:0}},newsLoading?"📰 PULLING FEEDS...":"📰 PULL NEWS FEEDS")
+      ,newsLoading&&React.createElement('div',{style:{textAlign:"center",fontSize:9,color:"rgba(240,90,26,.4)",fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:".12em",marginBottom:12}},"FETCHING RIGZONE · OILPRICE · EIA — SCORING FOR DHR")
+      ,newsAt&&!newsLoading&&React.createElement('div',{style:{fontSize:8,color:"rgba(255,255,255,.2)",fontFamily:"'Barlow',sans-serif",marginBottom:10,textAlign:"right"}},"Last pull: "+newsAt)
+      ,!newsLoading&&!newsItems.length&&React.createElement('div',{style:{textAlign:"center",padding:"48px 0",display:"flex",flexDirection:"column",alignItems:"center",gap:10}}
+        ,React.createElement('div',{style:{fontSize:32}},"📰")
+        ,React.createElement('div',{style:{fontSize:11,color:"rgba(255,255,255,.12)",fontFamily:"'Barlow',sans-serif"}},"Live headlines from Rigzone, OilPrice, EIA — scored for DHR relevance")
+      )
+      ,newsItems.map((item,i)=>React.createElement('div',{key:i,style:{background:"#0f0f1a",borderRadius:12,borderLeft:`3px solid ${fireColor(item.score||1)}`,padding:"14px 14px",marginBottom:8}}
+        ,React.createElement('div',{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}
+          ,React.createElement('div',{style:{fontSize:10,fontWeight:900,color:fireColor(item.score||1),fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:".06em"}},fireEmoji(item.score||1)+" "+(item.score||1)+"/3 DHR POTENTIAL")
+          ,React.createElement('div',{style:{fontSize:9,color:"rgba(255,255,255,.25)",fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,letterSpacing:".04em"}},item.source||"")
+        )
+        ,React.createElement('div',{style:{fontSize:14,fontWeight:800,color:"#f0ece4",fontFamily:"'Barlow Condensed',sans-serif",lineHeight:1.3,marginBottom:6}},item.title)
+        ,item.desc&&React.createElement('div',{style:{fontSize:11,color:"rgba(240,236,228,.35)",fontFamily:"'Barlow',sans-serif",lineHeight:1.5,marginBottom:8}},item.desc.slice(0,160)+(item.desc.length>160?"...":""))
+        ,React.createElement('div',{style:{display:"flex",gap:6}}
+          ,React.createElement('button',{onClick:()=>{if(onGen)onGen({title:item.title,summary:item.desc||item.title,source:item.source+" — NEWS FEED",url:item.link});},style:{flex:2,background:"rgba(240,90,26,.12)",border:"1px solid rgba(240,90,26,.3)",borderRadius:7,color:"#f05a1a",fontFamily:"'Barlow Condensed',sans-serif",fontSize:10,fontWeight:800,padding:"8px 0",cursor:"pointer",letterSpacing:".06em"}},"→ WRITE THIS")
+          ,React.createElement('a',{href:item.link,target:"_blank",rel:"noopener noreferrer",style:{flex:1,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:7,color:"rgba(255,255,255,.3)",fontFamily:"'Barlow Condensed',sans-serif",fontSize:10,fontWeight:800,padding:"8px 0",cursor:"pointer",letterSpacing:".06em",textDecoration:"none",display:"flex",alignItems:"center",justifyContent:"center"}},"VIEW")
         )
       ))
     )
