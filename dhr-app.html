@@ -291,31 +291,46 @@ let G_POST_FORMAT = (()=>{try{return localStorage.getItem("dhr_post_format")||"l
 const getActiveSys = ()=> G_POST_FORMAT === "iea" ? DHR_IEA_SYS : DHR_DAILY_SYS;
 
 const getDHRScore = h => {
-  const t=(h.title+" "+(h.summary||"")).toLowerCase(); let s=1;
-  ["fatal","death","killed","explosion","fire","blowout","shutdown","halt","layoff","layoffs","exits","exiting","leaving","pulled out",
-   "drug","alcohol","addiction","mental health","suicide","ptsd",
-   "record","historic","all-time","biggest","surge","spike","collapse","crash",
-   "billion","merger","acquired","buyout","takeover","bankruptcy","chapter 11","insolvency","debt default","ceo fired","plant closure","refinery shutdown","terminal closure",
-   "$70","$75","$80","$85","$90","$95","$100","$105","$110","$115","$120","$130","$150","$200","$8 gas","$5 gas",
-   "record low","all-time low","52-week low","price war","demand collapse","glut","supply restored",
-   "hormuz","iran","opec","war","strike","walkout","work stoppage","attack","sanction","sanctions lifted","deal signed",
-   "ceasefire","cease-fire","truce","reopen","reopens","resolved","agreement","diplomacy",
-   "price drop","prices fall","prices plunge","prices tumble","oil drops","crude falls","oil down","wti falls",
-   "crew shortage","rig shutdown","pipeline rupture","spill","leak","evacuation","emergency","fatality","fatalities","injured workers",
-   "drilling ban","permit freeze","federal moratorium","epa shutdown","executive order","energy emergency","national emergency","price controls","windfall tax","export ban",
-   "ban","freeze","moratorium","permit denied","federal ban","mass layoff","mass firing","pink slip",
-   "tipped over","overturned","rollover","collapsed","toppled","fell over","rig collapse","derrick collapse","crane collapse","equipment failure","mechanical failure",
-   "struck by","caught in","crushed","pinned","amputation","caught between","run over","runover",
-   "h2s","hydrogen sulfide","well control","kick","blowout preventer","bop failure","gas release","toxic release","toxic exposure",
-   "flash fire","burns","burned","engulfed","ignition","flare up",
-   "fell","fall from height","overboard","man overboard","submerged"].forEach(w=>{if(t.includes(w))s=3;});
-  if(s<3)["hiring","jobs","rig count","price","safety","regulation","drilling","production",
-   "workforce","pipeline","permit","bakken","permian","williston","eagle ford",
-   "completions","fracking","wireline","well service","oilfield worker","hand","crew",
-   "paycheck","wages","pay cut","bonus","contractor"].forEach(w=>{if(t.includes(w))s=Math.max(s,2);});
-  return s;
+  const t=(h.title+" "+(h.summary||"")).toLowerCase();
+  // TIER 5 — post immediately, 500K+ range
+  if(["mass casualty","multiple fatalities","multiple workers killed","multiple killed","major blowout","uncontrolled blowout","well blowout",
+     "federal drilling ban","national drilling moratorium","opec supply cut","opec production cut","output cut agreement",
+     "hormuz closure","strait of hormuz","hormuz blocked","oil field attack","oil infrastructure attack",
+     "refinery explosion","catastrophic explosion","catastrophic fire","national energy emergency","energy emergency declaration",
+     "oil price crash","crude price collapse","price war","demand collapse","drilling moratorium"].some(w=>t.includes(w)))return 5;
+  // TIER 4 — high DHR potential, 100-300K range
+  if(["executive order","presidential permit","presidential action","trump signs","biden reverses","administration blocks",
+     "federal energy policy","permit freeze","drilling ban","drilling ban lifted","federal moratorium","permit denied",
+     "mass layoff","major layoff","thousand workers","workforce reduction","company exits","pulling out","mass firing","pink slip",
+     "worker killed","fatality","fatal accident","worker dead","fatal incident","fatalities",
+     "pipeline rupture","major spill","pipeline explosion","significant leak","pipeline fire",
+     "record high","record low","all-time high","all-time low","historic price","52-week low","52-week high",
+     "billion dollar","major acquisition","major merger","company acquired","buyout","bankruptcy","chapter 11",
+     "iran sanction","venezuela sanction","russia oil","opec meeting","opec+ decision","opec cut",
+     "blowout","explosion","fire","rig fire","well fire","h2s","hydrogen sulfide","well control","bop",
+     "drug","alcohol","addiction","mental health","suicide","ptsd","crew shortage"].some(w=>t.includes(w)))return 4;
+  // TIER 3 — solid DHR content, 50-100K range
+  if(["bakken","williston","north dakota oil","dickinson","watford city","three forks","fort berthold",
+     "rig count","baker hughes","active rigs","rigs operating","rig activity",
+     "permian","eagle ford","dj basin","niobrara","anadarko",
+     "hiring surge","major hiring","expanding workforce","oilfield hiring",
+     "pipeline approved","pipeline canceled","pipeline project","pipeline permit",
+     "osha","csb investigation","safety violation","well control incident",
+     "earnings beat","earnings miss","production record","output record",
+     "layoff","layoffs","job cuts","workforce cut","downsizing",
+     "spill","leak","evacuation","emergency","injured workers","accident","incident",
+     "overturned","rollover","struck by","caught in","crushed","pinned","fall from height",
+     "regulation","energy policy","permit","moratorium","sanction","ban","freeze"].some(w=>t.includes(w)))return 3;
+  // TIER 2 — background monitoring
+  if(["wti","brent","crude","oil price","gas price","per barrel","price forecast",
+     "completion","fracking","frac","well service","oilfield service",
+     "hiring","jobs","oilfield","pipeline","drilling","production","earnings",
+     "opec","natural gas","lng","midstream","refinery","wireline","cementing",
+     "coiled tubing","oilfield worker","hand","crew","paycheck","wages","safety",
+     "contractor","workforce","operator","rig"].some(w=>t.includes(w)))return 2;
+  return 1;
 };
-const scoreBadge = s=>s===3?{label:"🔥🔥🔥",color:"#f05a1a",bg:"#1a0900"}:s===2?{label:"🔥🔥",color:"#f0b429",bg:"#141008"}:{label:"🔥",color:"#333",bg:"#0d0d0d"};
+const scoreBadge = s=>s>=5?{label:"🔥🔥🔥🔥🔥",color:"#ef4444",bg:"#1a0000"}:s>=4?{label:"🔥🔥🔥🔥",color:"#f05a1a",bg:"#1a0900"}:s>=3?{label:"🔥🔥🔥",color:"#f0b429",bg:"#141008"}:s>=2?{label:"🔥🔥",color:"#64748b",bg:"#0d0d0d"}:{label:"🔥",color:"#333",bg:"#0d0d0d"};
 const sentTag    = s=>s==="bullish"?{color:"#22c55e",bg:"#071209",text:"▲"}:s==="bearish"?{color:"#ef4444",bg:"#120707",text:"▼"}:{color:"#484848",bg:"#111",text:"◆"};
 const getBucket  = d=>{
   if(!d)return "THIS WEEK"; const s=d.toLowerCase();
@@ -3126,12 +3141,16 @@ function ViralAnatomyTab({fbData,onToast}){
     }).join("\n\n");
     try{
       const raw=await ai(
-        `Analyze these ${viral.length} DHR viral Facebook posts (500+ engagement each) and identify exactly what they have in common.\n\n${ctx}\n\nReturn ONLY valid JSON:\n{"avgWords":120,"hookType":"ALL CAPS statement of fact","topicCategories":["safety","culture","money"],"emotionalTrigger":"pride/anger","bestHour":"6 AM","referencesMoneyOrSafety":true,"commonStructure":"Hook → stat or story → worker perspective → gut-punch close","writeLikeThis":"Start with ALL CAPS fact hook, 100-130 words, safety or culture angle, close with one line workers feel in their chest"}`,
-        "You are a viral content analyst for an oilfield Facebook brand. Identify exact patterns — not generalizations. Be specific about word counts, hook structures, and emotional triggers. Return only valid JSON.",
+        `Analyze these ${viral.length} DHR viral Facebook posts (500+ engagement each) and identify exactly what they have in common.\n\n${ctx}\n\nReturn ONLY valid JSON (single object, no array, no markdown):\n{"avgWords":120,"hookType":"ALL CAPS statement of fact","topicCategories":["safety","culture","money"],"emotionalTrigger":"pride/anger","bestHour":"6 AM","referencesMoneyOrSafety":true,"commonStructure":"Hook → stat or story → worker perspective → gut-punch close","writeLikeThis":"Start with ALL CAPS fact hook, 100-130 words, safety or culture angle, close with one line workers feel in their chest"}`,
+        "You are a viral content analyst for an oilfield Facebook brand. Identify exact patterns — not generalizations. Be specific about word counts, hook structures, and emotional triggers. Return only valid JSON — a single object, no array wrapper, no markdown backticks.",
         800,true
       );
-      const parsed=safeJSON(raw);
-      if(parsed){setResult(parsed);setWriteConstraints(parsed.writeLikeThis||null);}
+      const parsed=safeObj(raw);
+      if(parsed){
+        setResult(parsed);
+        setWriteConstraints(parsed.writeLikeThis||null);
+        try{localStorage.setItem("dhr_viral_dna",JSON.stringify(parsed));}catch(_e){}
+      }
       else setResult({error:"Parse failed — try again"});
     }catch(e){setResult({error:e.message});}
     setLoading(false);
@@ -3708,11 +3727,66 @@ function WireScreen({onGen,onSchedule,onToast,onAddToCalendar,onSDB,sdbItems=[]}
   };
 
   const computeDhrScore=h=>{
-    const vr=getViralReason(h);
-    if(!vr)return 1;
-    if(["SAFETY INCIDENT","GEOPOLITICAL","INDUSTRY HALT"].includes(vr.label))return 3;
-    if(["JOB IMPACT","RECORD BREAKING","BIG MONEY","PRICE SPIKE"].includes(vr.label))return 2;
+    const t=(h.title+" "+(h.summary||"")).toLowerCase();
+    // TIER 5 — post immediately, 500K+ range
+    if(["mass casualty","multiple fatalities","multiple workers killed","multiple killed","major blowout","uncontrolled blowout","well blowout",
+       "federal drilling ban","national drilling moratorium","opec supply cut","opec production cut","output cut agreement",
+       "hormuz closure","strait of hormuz","hormuz blocked","oil field attack","oil infrastructure attack",
+       "refinery explosion","catastrophic explosion","catastrophic fire","national energy emergency","energy emergency declaration",
+       "oil price crash","crude price collapse","price war","demand collapse","drilling moratorium"].some(w=>t.includes(w)))return 5;
+    // TIER 4 — high DHR potential, 100-300K range
+    if(["executive order","presidential permit","presidential action","trump signs","biden reverses","administration blocks",
+       "federal energy policy","permit freeze","drilling ban","drilling ban lifted","federal moratorium","permit denied",
+       "mass layoff","major layoff","thousand workers","workforce reduction","company exits","pulling out","mass firing","pink slip",
+       "worker killed","fatality","fatal accident","worker dead","fatal incident","fatalities",
+       "pipeline rupture","major spill","pipeline explosion","significant leak","pipeline fire",
+       "record high","record low","all-time high","all-time low","historic price","52-week low","52-week high",
+       "billion dollar","major acquisition","major merger","company acquired","buyout","bankruptcy","chapter 11",
+       "iran sanction","venezuela sanction","russia oil","opec meeting","opec+ decision","opec cut",
+       "blowout","explosion","fire","rig fire","well fire","h2s","hydrogen sulfide","well control","bop",
+       "drug","alcohol","addiction","mental health","suicide","ptsd","crew shortage"].some(w=>t.includes(w)))return 4;
+    // TIER 3 — solid DHR content, 50-100K range
+    if(["bakken","williston","north dakota oil","dickinson","watford city","three forks","fort berthold",
+       "rig count","baker hughes","active rigs","rigs operating","rig activity",
+       "permian","eagle ford","dj basin","niobrara","anadarko",
+       "hiring surge","major hiring","expanding workforce","oilfield hiring",
+       "pipeline approved","pipeline canceled","pipeline project","pipeline permit",
+       "osha","csb investigation","safety violation","well control incident",
+       "earnings beat","earnings miss","production record","output record",
+       "layoff","layoffs","job cuts","workforce cut","downsizing",
+       "spill","leak","evacuation","emergency","injured workers","accident","incident",
+       "overturned","rollover","struck by","caught in","crushed","pinned","fall from height",
+       "regulation","energy policy","permit","moratorium","sanction","ban","freeze"].some(w=>t.includes(w)))return 3;
+    // TIER 2 — background monitoring
+    if(["wti","brent","crude","oil price","gas price","per barrel","price forecast",
+       "completion","fracking","frac","well service","oilfield service",
+       "hiring","jobs","oilfield","pipeline","drilling","production","earnings",
+       "opec","natural gas","lng","midstream","refinery","wireline","cementing",
+       "coiled tubing","oilfield worker","hand","crew","paycheck","wages","safety",
+       "contractor","workforce","operator","rig"].some(w=>t.includes(w)))return 2;
+    // COMBINATION BUMP — federal + worker impact or basin + tier3 bumps up one
     return 1;
+  };
+  const computeDhrScoreWithDNA=h=>{
+    let base=computeDhrScore(h);
+    // Combination bump: federal + worker impact signals together = +1 tier
+    if(base>=3&&base<5){
+      const t=(h.title+" "+(h.summary||"")).toLowerCase();
+      const hasFederal=/(executive order|federal|trump|biden|president|congress|administration|blm|doi|epa|osha|presidential|white house)/.test(t);
+      const hasWorker=/(layoff|hiring|jobs|paycheck|crew|hand|worker|rig|frac|completions|wireline)/.test(t);
+      const hasBasin=/(bakken|williston|permian|eagle ford|north dakota|dickinson)/.test(t);
+      if((hasFederal&&hasWorker)||(hasBasin&&hasFederal))base=Math.min(base+1,5);
+    }
+    // DNA tier 6 — match against proven viral patterns
+    try{
+      const dna=JSON.parse(localStorage.getItem("dhr_viral_dna")||"null");
+      if(dna&&dna.topicCategories&&base>=3){
+        const t=(h.title+" "+(h.summary||"")).toLowerCase();
+        const matches=dna.topicCategories.filter(c=>t.includes(c.toLowerCase())).length;
+        if(matches>=2)return 6;
+      }
+    }catch(_e){}
+    return base;
   };
 
   const pullWire=async()=>{
@@ -3725,7 +3799,7 @@ function WireScreen({onGen,onSchedule,onToast,onAddToCalendar,onSDB,sdbItems=[]}
       const data=await res.json();
       if(data.ok&&data.items&&data.items.length>0){
         const scored=data.items.map(h=>{
-          const dhrScore=computeDhrScore(h);
+          const dhrScore=computeDhrScoreWithDNA(h);
           const viralReason=getViralReason(h);
           const category=assignCat(h);
           const withScore={...h,dhrScore,viralReason,category};
@@ -3769,7 +3843,7 @@ function WireScreen({onGen,onSchedule,onToast,onAddToCalendar,onSDB,sdbItems=[]}
     setGenningId(null);
   };
 
-  const sbColor=s=>s>=3?"#ef4444":s>=2?"#f05a1a":"#f0b429";
+  const sbColor=s=>s>=6?"#a855f7":s>=5?"#ef4444":s>=4?"#f05a1a":s>=3?"#f0b429":s>=2?"#64748b":"#444";
   const filtered=filter==="all"?items:items.filter(h=>h.category===filter);
   const catCount=c=>items.filter(h=>h.category===c).length;
 
@@ -3821,7 +3895,7 @@ function WireScreen({onGen,onSchedule,onToast,onAddToCalendar,onSDB,sdbItems=[]}
               ,React.createElement("div",{onClick:()=>openCard(h,id),style:{padding:"10px 14px",cursor:"pointer",display:"flex",gap:8,alignItems:"flex-start"}}
                 ,React.createElement("div",{style:{flex:1,minWidth:0}}
                   ,React.createElement("div",{style:{display:"flex",gap:4,flexWrap:"wrap",marginBottom:4,alignItems:"center"}}
-                    ,React.createElement("span",{style:{fontFamily:"'Barlow Condensed',sans-serif",fontSize:8,fontWeight:900,color:sbColor(h.dhrScore),background:"rgba(255,255,255,.06)",padding:"2px 5px",borderRadius:3}},h.dhrScore>=3?"🔥🔥🔥":h.dhrScore>=2?"🔥🔥":"🔥")
+                    ,React.createElement("span",{style:{fontFamily:"'Barlow Condensed',sans-serif",fontSize:8,fontWeight:900,color:sbColor(h.dhrScore),background:"rgba(255,255,255,.06)",padding:"2px 5px",borderRadius:3}},h.dhrScore>=6?"⚡ DHR VIRAL":h.dhrScore>=5?"🔥🔥🔥🔥🔥":h.dhrScore>=4?"🔥🔥🔥🔥":h.dhrScore>=3?"🔥🔥🔥":h.dhrScore>=2?"🔥🔥":"🔥")
                     ,vr&&React.createElement("span",{style:{fontFamily:"'Barlow Condensed',sans-serif",fontSize:8,fontWeight:800,color:vr.color,background:"rgba(255,255,255,.05)",padding:"2px 5px",borderRadius:3}},vr.label)
                     ,h.sentiment&&h.sentiment!=="neutral"&&React.createElement("span",{style:{fontFamily:"'Barlow Condensed',sans-serif",fontSize:8,fontWeight:700,color:h.sentiment==="bullish"?"#22c55e":"#ef4444",letterSpacing:".05em"}},h.sentiment.toUpperCase())
                   )
